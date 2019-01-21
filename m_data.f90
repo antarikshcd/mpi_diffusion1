@@ -7,7 +7,7 @@ module mod_diff
     REAL :: sim_time ! total simulation time in [s]
     REAL(MK), DIMENSION(:, :), allocatable :: T_new, L
     REAL(MK), DIMENSION (:,:), allocatable :: T_old
-    real(mk) :: laplacian ! laplacian vector
+    real(mk) :: laplacian,r_sqdx, r_sqdy ! laplacian vector
     REAL :: dx,dy,Lx,Ly,dt,dt_limit
     INTEGER ::i,j,k,nstep, info, nstep_start
     logical :: file_exists

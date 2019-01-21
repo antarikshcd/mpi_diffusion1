@@ -114,8 +114,8 @@ T_old(1,1:Ny) = 1.0
 T_old(Ny,1:Ny) = 1.0
 
 ! square the discrete lengths
-sq_dx = dx**2
-sq_dy = dy**2
+r_sqdx = 1./dx**2
+r_sqdy = 1./dy**2
 
 call cpu_time(cpu_t1)
 
@@ -146,8 +146,8 @@ DO k=nstep_start,nstep
             !laplacian
             !L(i,j) = (T_old(i+1,j) - 2*T_old(i,j) + T_old(i-1,j))/sq_dx + &
             !         (T_old(i,j+1) - 2*T_old(i,j) + T_old(i,j-1))/sq_dy
-            laplacian = (T_old(i+1,j) - 2*T_old(i,j) + T_old(i-1,j))/sq_dx + &
-                        (T_old(i,j+1) - 2*T_old(i,j) + T_old(i,j-1))/sq_dy
+            laplacian = (T_old(i+1,j) - 2*T_old(i,j) + T_old(i-1,j))*r_sqdx + &
+                        (T_old(i,j+1) - 2*T_old(i,j) + T_old(i,j-1))*r_sqdy
             !update
             T_new(i,j) = D*laplacian*dt + T_old(i,j)            
 
