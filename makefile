@@ -15,7 +15,7 @@ CC          = cc
 DEBUG       = -C
 DEBUG       = 
 OPT         = 
-FFLAGS      = $(OPT) -free $(DEBUG) #-xvpara -xO3 -g
+FFLAGS      = $(OPT) -free  $(DEBUG) #-xvpara -xO0 -xO3 -g -fast -xvector=simd
 CFLAGS      = -O
 LD          = $(F77)
 LDFLAGS     = 
