@@ -141,18 +141,31 @@ DO k=nstep_start,nstep
     ! call cpu clock
     !call cpu_time(cpu_t1)
     !and laplacian
-    DO j=2, Ny-1
-        DO i=2,Nx-1
-            !laplacian
-            !L(i,j) = (T_old(i+1,j) - 2*T_old(i,j) + T_old(i-1,j))/sq_dx + &
-            !         (T_old(i,j+1) - 2*T_old(i,j) + T_old(i,j-1))/sq_dy
-            laplacian = (T_old(i+1,j) - 2*T_old(i,j) + T_old(i-1,j))/sq_dx + &
-                        (T_old(i,j+1) - 2*T_old(i,j) + T_old(i,j-1))/sq_dy
-            !update
-            T_new(i,j) = D*laplacian*dt + T_old(i,j)            
+    !DO j=2, Ny-1
+    !    DO i=2,Nx-1
+    !        !laplacian
+    !        !L(i,j) = (T_old(i+1,j) - 2*T_old(i,j) + T_old(i-1,j))/sq_dx + &
+    !        !         (T_old(i,j+1) - 2*T_old(i,j) + T_old(i,j-1))/sq_dy
+    !        laplacian = (T_old(i+1,j) - 2*T_old(i,j) + T_old(i-1,j))/sq_dx + &
+    !                    (T_old(i,j+1) - 2*T_old(i,j) + T_old(i,j-1))/sq_dy
+    !        !update
+    !        T_new(i,j) = D*laplacian*dt + T_old(i,j)            
+    !
+    !    ENDDO
+    !ENDDO
 
-        ENDDO
-    ENDDO
+    ! loop for xvector simd parallelization
+    do j=2, Ny-1
+        
+        T_new(2:Nx-1,j) = D*dt*((T_old(3:Nx,j) - 2*T_old(2:Nx-1,j) + T_old(1:Nx-2,j))/sq_dx + &
+                              (T_old(2:Nx-1,j+1) - 2*T_old(2:Nx-1,j) + T_old(2:Nx-1,j-1))/sq_dy) &
+                             + T_old(2:Nx-1,j)
+
+         !L(2:Nx-1,j) = D*dt*((T_old(3:Nx,j) - 2*T_old(2:Nx-1,j) + T_old(1:Nx-2,j))/sq_dx + &
+         !                     (T_old(2:Nx-1,j+1) - 2*T_old(2:Nx-1,j) + T_old(2:Nx-1,j-1))/sq_dy) &
+         !                     + T_old(2:Nx-1,j)
+
+    enddo
     ! call cpu clock
     !call cpu_time(cpu_t2)
     ! stop the timer
@@ -164,7 +177,7 @@ DO k=nstep_start,nstep
     ! print*, 'CPU time = ',cpu_t2-cpu_t1,'[s]'        
     
     !forward euler time integration
-    !T_new(:,:) = D*L(:,:)*dt + T_old(:,:) !instead of multiplying the whole matrix probably assinging it in do loop is faster
+    !T_new(2:Nx-1, 2:Ny-1) = D*L(2:Nx-1, 2:Ny-1)*dt + T_old(2:Nx-1,2:Ny-1) !instead of multiplying the whole matrix probably assinging it in do loop is faster
 
     ! print diagnostic
     !if (mod(k,10)==0) then
