@@ -99,6 +99,10 @@ IF (dt.GE.dt_limit) THEN
 
 ENDIF        
 
+! force total time steps for benchmark
+nstep = 100
+print*, 'Forcing total time steps = ',nstep
+
 print*, 'Using the input values:' 
 print*, 'sim_time=',sim_time,'[s], Nx=',Nx,&
         ', Ny=',Ny,', dt=',dt,'[s], No. of time steps=', nstep
@@ -112,11 +116,17 @@ T_old(Ny,1:Ny) = 1.0
 ! square the discrete lengths
 sq_dx = dx**2
 sq_dy = dy**2
+
+call cpu_time(cpu_t1)
+
+call system_clock(count=timer_start)
+
+
 !euler time integration
 DO k=nstep_start,nstep
     
     ! Saving a hotstart file for T_old at each time-step
-    call save_restart(hotstart_file, Nx, Ny, D, sim_time, dt, k, T_old)
+    !call save_restart(hotstart_file, Nx, Ny, D, sim_time, dt, k, T_old)
 
     ! condition to exit the do loop if tot time exceeds sim_time
     tot_time = k*dt 
@@ -127,50 +137,66 @@ DO k=nstep_start,nstep
 
 
     ! start the timer
-    call system_clock(count=timer_start)
+    !call system_clock(count=timer_start)
     ! call cpu clock
-    call cpu_time(cpu_t1)
+    !call cpu_time(cpu_t1)
     !and laplacian
     DO j=2, Ny-1
         DO i=2,Nx-1
             !laplacian
-            L(i,j) = (T_old(i+1,j) - 2*T_old(i,j) + T_old(i-1,j))/sq_dx + &
-                     (T_old(i,j+1) - 2*T_old(i,j) + T_old(i,j-1))/sq_dy
+            !L(i,j) = (T_old(i+1,j) - 2*T_old(i,j) + T_old(i-1,j))/sq_dx + &
+            !         (T_old(i,j+1) - 2*T_old(i,j) + T_old(i,j-1))/sq_dy
+            laplacian = (T_old(i+1,j) - 2*T_old(i,j) + T_old(i-1,j))/sq_dx + &
+                        (T_old(i,j+1) - 2*T_old(i,j) + T_old(i,j-1))/sq_dy
+            !update
+            T_new(i,j) = D*laplacian*dt + T_old(i,j)            
+
         ENDDO
     ENDDO
     ! call cpu clock
-    call cpu_time(cpu_t2)
+    !call cpu_time(cpu_t2)
     ! stop the timer
-    call system_clock(count=timer_stop)
+    !call system_clock(count=timer_stop)
     !calculate the elapsed time
-     e_time = real(timer_stop - timer_start)/timer_rate
-     print*, 'Time taken for calculating laplacian for step ',k,'is:'
-     print*, 'Wall time = ',e_time,'[s]'
-     print*, 'CPU time = ',cpu_t2-cpu_t1,'[s]'        
+    ! e_time = real(timer_stop - timer_start)/timer_rate
+    ! print*, 'Time taken for calculating laplacian for step ',k,'is:'
+    ! print*, 'Wall time = ',e_time,'[s]'
+    ! print*, 'CPU time = ',cpu_t2-cpu_t1,'[s]'        
     
     !forward euler time integration
-    T_new = D*L*dt + T_old
+    !T_new(:,:) = D*L(:,:)*dt + T_old(:,:) !instead of multiplying the whole matrix probably assinging it in do loop is faster
 
     ! print diagnostic
-    if (mod(k,10)==0) then
-        call diagnostic(k, dt, nstep, T_new)
-    endif
+    !if (mod(k,10)==0) then
+    !    call diagnostic(k, dt, nstep, T_new)
+    !endif
     ! call optional argument and write field at each step
-    call file_out(Nx, Ny, dx, dy, T_new, k)
+    !call file_out(Nx, Ny, dx, dy, T_new, k)
 
     !update T_old
     call elem_update_field(T_old, T_new)
     
 ENDDO  
 
-!PRINT*, 'T = ',T_new
+! call cpu clock
+call cpu_time(cpu_t2)
+call system_clock(count=timer_stop)
+cputime_timestep = (cpu_t2 - cpu_t1)/real(k-1)
+e_time = real(timer_stop - timer_start)/timer_rate
+
+print*, 'CPU TIME= ', cputime_timestep*100,'[s]'
+print*, 'CPU TIME per time-step = ', cputime_timestep
+print*, 'Wall time = ', e_time, '[s]'
+
+print*, 'total time steps = ',(k-1)
+print*, 'total time = ',tot_time,'[s]'
 ! write the final field
 call file_out(Nx, Ny, dx, dy, T_new)
 
-call DATE_AND_TIME(date, time)
-print*, 'Simulation end.....'
-print*, 'Date: ', date
-print*, 'Time: ', time
+!call DATE_AND_TIME(date, time)
+!print*, 'Simulation end.....'
+!print*, 'Date: ', date
+!print*, 'Time: ', time
 
 END PROGRAM diffusion
 

@@ -7,6 +7,7 @@ module mod_diff
     REAL :: sim_time ! total simulation time in [s]
     REAL(MK), DIMENSION(:, :), allocatable :: T_new, L
     REAL(MK), DIMENSION (:,:), allocatable :: T_old
+    real(mk) :: laplacian ! laplacian vector
     REAL :: dx,dy,Lx,Ly,dt,dt_limit
     INTEGER ::i,j,k,nstep, info, nstep_start
     logical :: file_exists
@@ -16,7 +17,7 @@ module mod_diff
     integer :: timer_start, timer_stop ! system clock counters
     integer :: timer_rate ! system clock count_rate: depends on the system
     real :: e_time ! elapsed time measuring time for the double do loops
-    real :: cpu_t1, cpu_t2 ! cpu times
+    real :: cpu_t1, cpu_t2, cputime_timestep ! cpu times
     
 
 end module mod_diff
