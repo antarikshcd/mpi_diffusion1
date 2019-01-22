@@ -113,6 +113,11 @@ T_old(1:Nx,Ny) = 1.0
 T_old(1,1:Ny) = 1.0
 T_old(Ny,1:Ny) = 1.0
 
+T_new(1:Nx,1) = 1.0
+T_new(1:Nx,Ny) = 1.0
+T_new(1,1:Ny) = 1.0
+T_new(Ny,1:Ny) = 1.0
+
 ! square the discrete lengths
 sq_dx = dx**2
 sq_dy = dy**2
