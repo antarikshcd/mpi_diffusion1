@@ -64,7 +64,7 @@ INTERFACE
     real(MK), dimension (:,:) :: T_old
     end subroutine save_restart
     !
-subroutine update_field(p_old, p_new, T_old, T_new)
+subroutine update_field(p_old, p_new, T_old, T_new, k)
     USE mod_diff, ONLY:MK! contains allocation subroutine
     implicit none
     real(MK), dimension(:, :), pointer:: p_new
@@ -72,6 +72,7 @@ subroutine update_field(p_old, p_new, T_old, T_new)
     real(MK), dimension(:, :), pointer :: swap
     real(MK), dimension(:, :), target:: T_new
     real(MK), dimension(:, :), target:: T_old
+    integer :: k
     
     end subroutine update_field
    
@@ -132,6 +133,11 @@ p_old(1:Nx,1) = 1.0
 p_old(1:Nx,Ny) = 1.0
 p_old(1,1:Ny) = 1.0
 p_old(Ny,1:Ny) = 1.0
+
+p_new(1:Nx,1) = 1.0
+p_new(1:Nx,Ny) = 1.0
+p_new(1,1:Ny) = 1.0
+p_new(Ny,1:Ny) = 1.0
 
 ! square the discrete lengths
 sq_dx = dx**2
@@ -198,7 +204,7 @@ DO k=nstep_start,nstep
 
     !update T_old
     !call elem_update_field(p_old, p_new)
-    call update_field(p_old, p_new, T_old, T_new)
+    call update_field(p_old, p_new, T_old, T_new, k)
     
 ENDDO  
 
