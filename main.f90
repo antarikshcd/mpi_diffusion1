@@ -64,14 +64,12 @@ INTERFACE
     real(MK), dimension (:,:) :: T_old
     end subroutine save_restart
     !
-subroutine update_field(p_old, p_new, T_old, T_new)
+subroutine update_field(T_old, T_new)
     USE mod_diff, ONLY:MK! contains allocation subroutine
     implicit none
-    real(MK), dimension(:, :), pointer:: p_new
-    real(MK), dimension(:, :), pointer:: p_old
     real(MK), dimension(:, :), pointer :: swap
-    real(MK), dimension(:, :), target:: T_new
-    real(MK), dimension(:, :), target:: T_old
+    real(MK), dimension(:, :) :: T_new
+    real(MK), dimension(:, :) :: T_old
     
     end subroutine update_field
    
@@ -198,7 +196,7 @@ DO k=nstep_start,nstep
 
     !update T_old
     !call elem_update_field(p_old, p_new)
-    call update_field(p_old, p_new, T_old, T_new)
+    call update_field(T_old, T_new)
     
 ENDDO  
 
