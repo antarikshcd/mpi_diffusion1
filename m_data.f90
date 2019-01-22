@@ -5,8 +5,9 @@ module mod_diff
     INTEGER :: Nx, Ny, D
     INTEGER, PARAMETER :: MK = kind(1.0E0)
     REAL :: sim_time ! total simulation time in [s]
-    REAL(MK), DIMENSION(:, :), allocatable :: T_new, L
-    REAL(MK), DIMENSION (:,:), allocatable :: T_old
+    REAL(MK), DIMENSION(:, :), allocatable, target :: T_new, L
+    REAL(MK), DIMENSION (:,:), allocatable, target :: T_old
+    real(mk), dimension(:,:), pointer :: p_new, p_old
     real(mk) :: laplacian, sq_dx, sq_dy ! laplacian vector
     REAL :: dx,dy,Lx,Ly,dt,dt_limit
     INTEGER ::i,j,k,nstep, info, nstep_start

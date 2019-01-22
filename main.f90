@@ -62,7 +62,18 @@ INTERFACE
     integer :: Nx, Ny, D, itstep
     real :: sim_time, dt
     real(MK), dimension (:,:) :: T_old
-end subroutine save_restart
+    end subroutine save_restart
+    !
+subroutine update_field(p_old, p_new, T_old, T_new)
+    USE mod_diff, ONLY:MK! contains allocation subroutine
+    implicit none
+    real(MK), dimension(:, :), pointer:: p_new
+    real(MK), dimension(:, :), pointer:: p_old
+    real(MK), dimension(:, :), pointer :: swap
+    real(MK), dimension(:, :), target:: T_new
+    real(MK), dimension(:, :), target:: T_old
+    
+    end subroutine update_field
    
 END INTERFACE
 
@@ -81,6 +92,10 @@ call initialize(Lx, Ly, nstep, T_old, T_new, L, inp_file, hotstart_file, &
 
 ! reallocate T_old with changed size (here it remains same)
 !call alloc(L, T_new, T_old, Nx, Ny, info)
+
+!pointer to target
+p_new => T_new
+p_old => T_old
 
 ! set the dt, dx, dy
 
@@ -108,10 +123,15 @@ print*, 'sim_time=',sim_time,'[s], Nx=',Nx,&
         ', Ny=',Ny,', dt=',dt,'[s], No. of time steps=', nstep
 
 !set the dirichlet boundary condition
-T_old(1:Nx,1) = 1.0
-T_old(1:Nx,Ny) = 1.0
-T_old(1,1:Ny) = 1.0
-T_old(Ny,1:Ny) = 1.0
+!T_old(1:Nx,1) = 1.0
+!T_old(1:Nx,Ny) = 1.0
+!T_old(1,1:Ny) = 1.0
+!T_old(Ny,1:Ny) = 1.0
+
+p_old(1:Nx,1) = 1.0
+p_old(1:Nx,Ny) = 1.0
+p_old(1,1:Ny) = 1.0
+p_old(Ny,1:Ny) = 1.0
 
 ! square the discrete lengths
 sq_dx = dx**2
@@ -146,10 +166,13 @@ DO k=nstep_start,nstep
             !laplacian
             !L(i,j) = (T_old(i+1,j) - 2*T_old(i,j) + T_old(i-1,j))/sq_dx + &
             !         (T_old(i,j+1) - 2*T_old(i,j) + T_old(i,j-1))/sq_dy
-            laplacian = (T_old(i+1,j) - 2*T_old(i,j) + T_old(i-1,j))/sq_dx + &
-                        (T_old(i,j+1) - 2*T_old(i,j) + T_old(i,j-1))/sq_dy
+            !laplacian = (T_old(i+1,j) - 2*T_old(i,j) + T_old(i-1,j))/sq_dx + &
+            !            (T_old(i,j+1) - 2*T_old(i,j) + T_old(i,j-1))/sq_dy
+            laplacian = (p_old(i+1,j) - 2*p_old(i,j) + p_old(i-1,j))/sq_dx + &
+                        (p_old(i,j+1) - 2*p_old(i,j) + p_old(i,j-1))/sq_dy
+
             !update
-            T_new(i,j) = D*laplacian*dt + T_old(i,j)            
+            p_new(i,j) = D*laplacian*dt + p_old(i,j)            
 
         ENDDO
     ENDDO
@@ -174,7 +197,8 @@ DO k=nstep_start,nstep
     !call file_out(Nx, Ny, dx, dy, T_new, k)
 
     !update T_old
-    call elem_update_field(T_old, T_new)
+    !call elem_update_field(p_old, p_new)
+    call update_field(p_old, p_new, T_old, T_new)
     
 ENDDO  
 
